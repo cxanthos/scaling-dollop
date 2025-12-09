@@ -1,0 +1,66 @@
+#!/bin/zsh
+
+# Vacation Portal Project Control Script
+# Usage: ./run [build|start|teardown|check]
+
+set -e
+
+PROJECT_NAME="vacation-portal"
+COMPOSE_FILE="compose.yml"
+BE_CONTAINER="vacation_be"
+BE_WORKING_DIR="/var/www/html/be"
+
+DOCKER_COMPOSE=(docker compose -p $PROJECT_NAME -f $COMPOSE_FILE)
+DOCKER_BACKEND=(docker exec -w $BE_WORKING_DIR -it $BE_CONTAINER)
+
+build() {
+  echo "[BUILD] Starting Docker Compose..."
+  DOCKER_BUILDKIT=0 "${DOCKER_COMPOSE[@]}" build
+  "${DOCKER_COMPOSE[@]}" up -d
+
+  echo "[BUILD] Installing Composer dependencies in BE container..."
+  "${DOCKER_BACKEND[@]}" composer install
+  echo "[BUILD] Running DB migrations..."
+  "${DOCKER_BACKEND[@]}" composer db:migrate
+  echo "[BUILD] Seeding DB..."
+  "${DOCKER_BACKEND[@]}" composer db:seed
+  echo "[BUILD] Build complete."
+
+  "${DOCKER_COMPOSE[@]}" down
+}
+
+start() {
+  echo "[START] Starting Docker Compose..."
+  "${DOCKER_COMPOSE[@]}" up
+  echo "[START] Project started."
+}
+
+teardown() {
+  echo "[TEARDOWN] Stopping and removing Docker Compose services and volumes..."
+  "${DOCKER_COMPOSE[@]}" down -v
+  echo "[TEARDOWN] Project and volumes stopped and removed."
+}
+
+check() {
+  echo "[CHECK] Running all checks in BE container..."
+  "${DOCKER_BACKEND[@]}" composer check:all
+}
+
+case "$1" in
+  build)
+    build
+    ;;
+  start)
+    start
+    ;;
+  teardown)
+    teardown
+    ;;
+  check)
+    check
+    ;;
+  *)
+    echo "Usage: $0 [build|start|teardown|check]"
+    exit 1
+    ;;
+esac
