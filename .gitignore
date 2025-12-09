@@ -1,0 +1,16 @@
+# PHP
+be/vendor/
+
+# Environment variables
+.env
+
+# IDEs and other tools
+.idea/
+.vscode/
+.DS_Store
+
+# PHPUnit cache
+be/.phpunit.result.cache
+
+# PHP-CS-Fixer cache
+be/.php-cs-fixer.cache
