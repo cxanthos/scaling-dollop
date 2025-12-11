@@ -24,6 +24,8 @@ readonly class UsersRoutes
         // Get single user by ID
         $this->router->get('/users/{id:number}', [UsersController::class, 'get']);
 
+        $this->router->get('/users/{id:number}/vacations', [UsersController::class, 'getAll']);
+
         // Update user by ID
         $this->router->put('/users/{id:number}', [UsersController::class, 'update']);
 

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Domains\Users\Controllers;
 
@@ -8,19 +6,22 @@ use App\Domains\Authentication\Services\AccessControlService;
 use App\Domains\Users\Models\UserModel;
 use App\Domains\Users\Models\UserRole;
 use App\Domains\Users\Repositories\UsersRepository;
+use App\Domains\Vacations\Repositories\VacationsRepository;
 use App\Shared\JsonErrorResponse;
-use DateMalformedStringException;
-use JsonException;
 use Laminas\Diactoros\Response\JsonResponse;
+use League\Container\Exception\NotFoundException;
 use League\Route\Http\Exception\ForbiddenException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use DateMalformedStringException;
+use JsonException;
 
 readonly class UsersController
 {
-    public function __construct(private UsersRepository $usersRepository, private AccessControlService $accessControl)
-    {
-    }
+    public function __construct(
+        private UsersRepository $usersRepository,
+        private AccessControlService $accessControl
+    ) {}
 
     /**
      * @throws JsonException|DateMalformedStringException|ForbiddenException
@@ -35,7 +36,7 @@ readonly class UsersController
         $userModel = new UserModel(
             null,
             $body['email'] ?? '',
-            $body['password'] ?? '', // Do not allow the password to be null
+            $body['password'] ?? '',  // Do not allow the password to be null
             $body['name'] ?? '',
             $body['employeeCode'] ?? '',
             UserRole::from($body['role'] ?? 'employee')
@@ -70,6 +71,20 @@ readonly class UsersController
 
         return new JsonResponse($userModel, 200);
     }
+
+    /**/
+    public function getAll(ServerRequestInterface $request, array $params): ResponseInterface {
+
+        $this->requireManager($request);
+
+        $userModel = $this->usersRepository->findById(id: (int) $params['id']);
+
+        $vacationRepo = new VacationsRepository();
+        $vacations = $vacationRepo->findUserRequests($params['id']);
+
+        return new JsonResponse($vacations, 200);
+    }
+
 
     /**
      * @param array{id: int} $params
