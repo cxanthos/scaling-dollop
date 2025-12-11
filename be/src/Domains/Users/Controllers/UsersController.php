@@ -72,15 +72,16 @@ readonly class UsersController
         return new JsonResponse($userModel, 200);
     }
 
-    /**/
+    /*
+     * @param array{id: int} $params
+     * @throws DateMalformedStringException
+     */
     public function getAll(ServerRequestInterface $request, array $params): ResponseInterface {
 
         $this->requireManager($request);
 
         $userModel = $this->usersRepository->findById(id: (int) $params['id']);
-
-        $vacationRepo = new VacationsRepository();
-        $vacations = $vacationRepo->findUserRequests($params['id']);
+        $vacations = new VacationsRepository($this->usersRepository->getDB())->findUserRequests(userId: $userModel->getId());
 
         return new JsonResponse($vacations, 200);
     }

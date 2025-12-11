@@ -20,6 +20,9 @@ readonly class UsersRepository
     {
     }
 
+    public function getDB(){
+        return $this->db;
+    }
     /**
      * @throws DateMalformedStringException
      */
