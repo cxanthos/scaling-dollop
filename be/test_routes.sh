@@ -110,4 +110,4 @@ echo -e "\nRenewing a token..."
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $MANAGER_TOKEN" $BASE_URL/auth/renew
 
 echo -e "\nGetting specific user..."
-curl -X GET -H "Authorization: Bearer $MANAGER_TOKEN" $BASE_URL/users/2/vacations
+curl -X GET -H "Authorization: Bearer $MANAGER_TOKEN" $BASE_URL/users/2/vacations | jq
